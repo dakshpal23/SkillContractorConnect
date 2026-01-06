@@ -229,7 +229,7 @@ const Book = ({ userData }) => {
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="Enter your location where work needs to be done"
+            placeholder="Enter your location "
             style={{
               width: '100%',
               padding: '12px',
