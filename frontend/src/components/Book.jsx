@@ -1,21 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const Book = ({ userData }) => {
   const [selectedSkill, setSelectedSkill] = useState('');
+  const [workType, setWorkType] = useState('');
+  const [customWorkType, setCustomWorkType] = useState('');
   const [location, setLocation] = useState('');
   const [timing, setTiming] = useState('scheduled');
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [scheduledEndTime, setScheduledEndTime] = useState('');
   const [currentStep, setCurrentStep] = useState('booking'); // booking, matching, connected
   const [matchedWorker, setMatchedWorker] = useState(null);
   const [userAgreed, setUserAgreed] = useState(false);
   const [workerAgreed, setWorkerAgreed] = useState(false);
+  const [searchWorkType, setSearchWorkType] = useState('');
+  const [showWorkTypeDropdown, setShowWorkTypeDropdown] = useState(false);
+  const workTypeRef = useRef(null);
 
   const skills = ['Carpenter', 'Electrician', 'Plumber', 'Welder', 'Construction Worker', 'Farm Worker'];
+  
+  const workTypes = {
+    'Electrician': ['AC Repair', 'LED Installation', 'TV Installation', 'Washing Machine Repair', 'Wiring Work', 'Switch/Socket Installation'],
+    'Plumber': ['Pipe Repair', 'Tap Installation', 'Bathroom Fitting', 'Kitchen Plumbing', 'Drain Cleaning', 'Water Tank Installation'],
+    'Carpenter': ['Furniture Making', 'Door Installation', 'Window Repair', 'Cabinet Making', 'Flooring Work', 'Custom Woodwork'],
+    'Welder': ['Metal Fabrication', 'Gate Repair', 'Railing Work', 'Structural Welding', 'Pipe Welding', 'Custom Metal Work'],
+    'Construction Worker': ['Wall Construction', 'Painting', 'Tile Work', 'Concrete Work', 'Renovation', 'General Construction'],
+    'Farm Worker': ['Crop Harvesting', 'Land Preparation', 'Irrigation Setup', 'Pest Control', 'Seed Planting', 'General Farm Work']
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (workTypeRef.current && !workTypeRef.current.contains(event.target)) {
+        setShowWorkTypeDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const findServiceProvider = () => {
-    if (!selectedSkill || !location || (timing === 'scheduled' && (!scheduledDate || !scheduledTime))) {
+    if (!selectedSkill || !location || (timing === 'scheduled' && (!scheduledDate || !scheduledTime || !scheduledEndTime))) {
       alert('Please fill all required fields');
+      return;
+    }
+
+    if (!workType && !customWorkType) {
+      alert('Please specify the type of work required');
       return;
     }
 
@@ -57,10 +91,15 @@ const Book = ({ userData }) => {
       // Reset form
       setCurrentStep('booking');
       setSelectedSkill('');
+      setWorkType('');
+      setCustomWorkType('');
       setLocation('');
       setTiming('scheduled');
       setScheduledDate('');
+      setSearchWorkType('');
+      setShowWorkTypeDropdown(false);
       setScheduledTime('');
+      setScheduledEndTime('');
       setUserAgreed(false);
       setWorkerAgreed(false);
       setMatchedWorker(null);
@@ -217,6 +256,116 @@ const Book = ({ userData }) => {
           </select>
         </div>
 
+        {/* Work Type Selection - Searchable */}
+        {selectedSkill && (
+          <div ref={workTypeRef} style={{ marginBottom: '25px', position: 'relative' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: '#2d3436',
+              fontWeight: '600'
+            }}>Specific Type of Work Required:</label>
+            
+            <input
+              type="text"
+              value={searchWorkType || workType}
+              onChange={(e) => {
+                setSearchWorkType(e.target.value);
+                setShowWorkTypeDropdown(true);
+                if (e.target.value === '') {
+                  setWorkType('');
+                }
+              }}
+              onFocus={() => setShowWorkTypeDropdown(true)}
+              placeholder="Type to search or select from list..."
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '16px',
+                marginBottom: '10px'
+              }}
+            />
+            
+            {showWorkTypeDropdown && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                background: 'white',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                zIndex: 1000,
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              }}>
+                {workTypes[selectedSkill]
+                  ?.filter(type => 
+                    type.toLowerCase().includes(searchWorkType.toLowerCase())
+                  )
+                  .map(type => (
+                    <div
+                      key={type}
+                      onClick={() => {
+                        setWorkType(type);
+                        setSearchWorkType('');
+                        setShowWorkTypeDropdown(false);
+                        setCustomWorkType('');
+                      }}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid #f0f0f0',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = '#f8f9fa'}
+                      onMouseLeave={(e) => e.target.style.background = 'white'}
+                    >
+                      {type}
+                    </div>
+                  ))}
+                <div
+                  onClick={() => {
+                    setWorkType('custom');
+                    setSearchWorkType('');
+                    setShowWorkTypeDropdown(false);
+                  }}
+                  style={{
+                    padding: '12px',
+                    cursor: 'pointer',
+                    fontStyle: 'italic',
+                    color: '#636e72',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#f8f9fa'}
+                  onMouseLeave={(e) => e.target.style.background = 'white'}
+                >
+                  Other (Specify custom work)
+                </div>
+              </div>
+            )}
+            
+            {workType === 'custom' && (
+              <input
+                type="text"
+                value={customWorkType}
+                onChange={(e) => setCustomWorkType(e.target.value)}
+                placeholder="Please specify the type of work you need"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '2px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '16px'
+                }}
+              />
+            )}
+          </div>
+        )}
+
         {/* Location */}
         <div style={{ marginBottom: '25px' }}>
           <label style={{
@@ -296,29 +445,72 @@ const Book = ({ userData }) => {
           </div>
 
           {timing === 'scheduled' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-              <input
-                type="date"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-                style={{
-                  padding: '12px',
-                  border: '2px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '16px'
-                }}
-              />
-              <input
-                type="time"
-                value={scheduledTime}
-                onChange={(e) => setScheduledTime(e.target.value)}
-                style={{
-                  padding: '12px',
-                  border: '2px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '16px'
-                }}
-              />
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <input
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '16px'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  color: '#636e72',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>Availability Period:</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '6px',
+                      color: '#636e72',
+                      fontSize: '13px'
+                    }}>Start Time</label>
+                    <input
+                      type="time"
+                      value={scheduledTime}
+                      onChange={(e) => setScheduledTime(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '16px'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '6px',
+                      color: '#636e72',
+                      fontSize: '13px'
+                    }}>End Time</label>
+                    <input
+                      type="time"
+                      value={scheduledEndTime}
+                      onChange={(e) => setScheduledEndTime(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '16px'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

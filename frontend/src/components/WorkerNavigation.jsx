@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
-import Home from './Home';
-import Book from './Book';
-import MyBookings from './MyBookings';
-import History from './History';
+import WorkerHome from './WorkerHome';
+import FindJobs from './FindJobs';
+import WorkerProfile from './WorkerProfile';
+import MyEarnings from './MyEarnings';
 
-const UserNavigation = ({ userData, onLogout }) => {
+const WorkerNavigation = ({ userData, onLogout }) => {
   const [activeTab, setActiveTab] = useState('home');
 
   const tabs = [
     { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'book', label: 'Book', icon: '📅' },
-    { id: 'mybookings', label: 'My Bookings', icon: '📋' },
-    { id: 'history', label: 'History', icon: '📜' }
+    { id: 'findjobs', label: 'Find Jobs', icon: '🔍' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
+    { id: 'earnings', label: 'My Earnings', icon: '💰' }
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'home': return <Home userData={userData} />;
-      case 'book': return <Book userData={userData} />;
-      case 'mybookings': return <MyBookings userData={userData} />;
-      case 'history': return <History userData={userData} />;
-      default: return <Home userData={userData} />;
+      case 'home': return <WorkerHome userData={userData} />;
+      case 'findjobs': return <FindJobs userData={userData} />;
+      case 'profile': return <WorkerProfile userData={userData} />;
+      case 'earnings': return <MyEarnings userData={userData} />;
+      default: return <WorkerHome userData={userData} />;
     }
   };
 
@@ -32,31 +32,7 @@ const UserNavigation = ({ userData, onLogout }) => {
       background: '#f8f9fa'
     }}>
       {/* Header */}
-      {/* <header style={{
-        background: 'linear-gradient(135deg, #74b9ff, #0984e3)',
-        color: 'white',
-        padding: '15px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        <h1 style={{ margin: 0, fontSize: '20px' }}>WorkConnect</h1>
-        <button
-          onClick={onLogout}
-          style={{
-            background: 'rgba(255,255,255,0.2)',
-            border: 'none',
-            color: 'white',
-            padding: '8px 15px',
-            borderRadius: '20px',
-            cursor: 'pointer'
-          }}
-        >
-          Logout
-        </button>
-      </header> */}
-<header style={{
+      <header style={{
         background: '#3d4f7d',
         padding: '15px 40px',
         display: 'flex',
@@ -85,7 +61,6 @@ const UserNavigation = ({ userData, onLogout }) => {
           }}>SkillConnect</h1>
         </div>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          
           <div style={{
             width: '40px',
             height: '40px',
@@ -100,40 +75,49 @@ const UserNavigation = ({ userData, onLogout }) => {
           </div>
         </div>
       </header>
-      {/* Content */}
-      <main style={{ flex: 1, overflow: 'auto' }}>
+
+      {/* Main Content */}
+      <main style={{
+        flex: 1,
+        overflow: 'auto',
+        paddingBottom: '80px'
+      }}>
         {renderContent()}
       </main>
 
       {/* Bottom Navigation */}
       <nav style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
         background: 'white',
-        borderTop: '1px solid #e9ecef',
+        borderTop: '1px solid #ddd',
         display: 'flex',
-        boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+        justifyContent: 'space-around',
+        padding: '10px 0',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
       }}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              flex: 1,
-              padding: '12px 8px',
-              border: 'none',
-              background: activeTab === tab.id ? '#3d4f7d' : 'transparent',
-              color: activeTab === tab.id ? 'white' : '#6c757d',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               gap: '4px',
-              fontSize: '12px',
+              padding: '8px 16px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: activeTab === tab.id ? '#74b9ff' : '#636e72',
+              transition: 'all 0.3s ease',
               fontWeight: activeTab === tab.id ? 'bold' : 'normal'
             }}
           >
-            <span style={{ fontSize: '20px' }}>{tab.icon}</span>
-            {tab.label}
+            <span style={{ fontSize: '24px' }}>{tab.icon}</span>
+            <span style={{ fontSize: '12px' }}>{tab.label}</span>
           </button>
         ))}
       </nav>
@@ -141,4 +125,4 @@ const UserNavigation = ({ userData, onLogout }) => {
   );
 };
 
-export default UserNavigation;
+export default WorkerNavigation;

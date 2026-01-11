@@ -8,6 +8,7 @@ import CreateWorker from './components/CreateWorker';
 import CreateContractor from './components/CreateContractor';
 import UserNavigation from './components/UserNavigation';
 import ContractorNavigation from './components/ContractorNavigation';
+import WorkerNavigation from './components/WorkerNavigation';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/create-worker" element={<CreateWorkerWrapper />} />
         <Route path="/create-contractor" element={<CreateContractorWrapper />} />
         <Route path="/user-dashboard" element={<UserDashboardWrapper />} />
+        <Route path="/worker-dashboard" element={<WorkerDashboardWrapper />} />
         <Route path="/contractor-dashboard" element={<ContractorDashboardWrapper />} />
       </Routes>
     </div>
@@ -45,6 +47,10 @@ function LoginWrapper() {
       onNavigateToUserDashboard={(data) => {
         sessionStorage.setItem('userData', JSON.stringify(data));
         navigate('/user-dashboard');
+      }}
+      onNavigateToWorkerDashboard={(data) => {
+        sessionStorage.setItem('userData', JSON.stringify(data));
+        navigate('/worker-dashboard');
       }}
       onNavigateToContractorDashboard={(data) => {
         sessionStorage.setItem('userData', JSON.stringify(data));
@@ -136,6 +142,20 @@ function ContractorDashboardWrapper() {
   const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
   return (
     <ContractorNavigation
+      userData={userData}
+      onLogout={() => {
+        sessionStorage.removeItem('userData');
+        navigate('/');
+      }}
+    />
+  );
+}
+
+function WorkerDashboardWrapper() {
+  const navigate = useNavigate();
+  const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+  return (
+    <WorkerNavigation
       userData={userData}
       onLogout={() => {
         sessionStorage.removeItem('userData');

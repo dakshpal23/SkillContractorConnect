@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Login = ({ onNavigateToSignup, onNavigateToUserDashboard, onNavigateToContractorDashboard }) => {
+const Login = ({ onNavigateToSignup, onNavigateToUserDashboard, onNavigateToWorkerDashboard, onNavigateToContractorDashboard }) => {
   const [userType, setUserType] = useState('user');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -13,11 +13,12 @@ const Login = ({ onNavigateToSignup, onNavigateToUserDashboard, onNavigateToCont
     if (userType === 'user') {
       const userData = { userType, phone, name: 'John Doe' };
       onNavigateToUserDashboard(userData);
+    } else if (userType === 'worker') {
+      const userData = { userType, phone, name: 'Mike Worker' };
+      onNavigateToWorkerDashboard(userData);
     } else if (userType === 'contractor') {
       const userData = { userType, phone, name: 'ABC Construction' };
       onNavigateToContractorDashboard(userData);
-    } else {
-      alert('Login successful! (Worker dashboard not implemented yet)');
     }
   };
 
@@ -77,7 +78,7 @@ const Login = ({ onNavigateToSignup, onNavigateToUserDashboard, onNavigateToCont
                 transition: 'all 0.3s ease',
                 fontWeight: '500',
                 textTransform: 'capitalize'
-              }}>>
+              }}>
                 <input
                   type="radio"
                   value={type}

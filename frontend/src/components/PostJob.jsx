@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 
 const PostJob = ({ userData }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showApplicants, setShowApplicants] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
   const [jobDetails, setJobDetails] = useState({
     title: '',
     skillRequired: '',
@@ -22,7 +24,45 @@ const PostJob = ({ userData }) => {
       dailyWage: 800,
       postedDate: '2024-01-15',
       status: 'active',
-      applicants: 3
+      applicants: 3,
+      applicantsList: [
+        {
+          id: 1,
+          name: 'John Smith',
+          skill: 'Carpenter',
+          rating: 4.8,
+          experience: '5 years',
+          dailyRate: 800,
+          location: 'Mumbai',
+          completedJobs: 156,
+          preferredSchedule: '9:00 AM - 5:00 PM',
+          appliedDate: '2024-01-16'
+        },
+        {
+          id: 2,
+          name: 'Robert Davis',
+          skill: 'Carpenter',
+          rating: 4.6,
+          experience: '3 years',
+          dailyRate: 700,
+          location: 'Mumbai',
+          completedJobs: 89,
+          preferredSchedule: '8:00 AM - 4:00 PM',
+          appliedDate: '2024-01-17'
+        },
+        {
+          id: 3,
+          name: 'James Wilson',
+          skill: 'Carpenter',
+          rating: 4.9,
+          experience: '6 years',
+          dailyRate: 850,
+          location: 'Mumbai',
+          completedJobs: 178,
+          preferredSchedule: '10:00 AM - 6:00 PM',
+          appliedDate: '2024-01-18'
+        }
+      ]
     },
     {
       id: 2,
@@ -34,7 +74,21 @@ const PostJob = ({ userData }) => {
       dailyWage: 1000,
       postedDate: '2024-01-12',
       status: 'filled',
-      applicants: 8
+      applicants: 8,
+      applicantsList: [
+        {
+          id: 4,
+          name: 'Mike Johnson',
+          skill: 'Electrician',
+          rating: 4.9,
+          experience: '7 years',
+          dailyRate: 1000,
+          location: 'Delhi',
+          completedJobs: 203,
+          preferredSchedule: '8:00 AM - 4:00 PM',
+          appliedDate: '2024-01-13'
+        }
+      ]
     }
   ]);
 
@@ -54,7 +108,8 @@ const PostJob = ({ userData }) => {
       ...jobDetails,
       postedDate: new Date().toISOString().split('T')[0],
       status: 'active',
-      applicants: 0
+      applicants: 0,
+      applicantsList: []
     };
     setJobPostings([newJob, ...jobPostings]);
     setJobDetails({
@@ -68,6 +123,283 @@ const PostJob = ({ userData }) => {
     setShowCreateForm(false);
     alert('Job posted successfully!');
   };
+
+  const handleViewApplicants = (job) => {
+    setSelectedJob(job);
+    setShowApplicants(true);
+  };
+
+  const handleHireWorker = (worker) => {
+    alert(`Hiring ${worker.name} for ${selectedJob.title}!`);
+  };
+
+  if (showApplicants && selectedJob) {
+    return (
+      <div style={{ padding: '20px' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px'
+        }}>
+          <div>
+            <button
+              onClick={() => setShowApplicants(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#0984e3',
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                marginBottom: '10px'
+              }}
+            >
+              ← Back to Job Postings
+            </button>
+            <h2 style={{ margin: 0, color: '#2d3436' }}>
+              Applicants for "{selectedJob.title}"
+            </h2>
+            <p style={{ margin: '5px 0 0 0', color: '#636e72', fontSize: '14px' }}>
+              {selectedJob.applicantsList?.length || 0} applicants
+            </p>
+          </div>
+        </div>
+
+        <div style={{
+          background: 'white',
+          borderRadius: '15px',
+          padding: '20px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          marginBottom: '20px'
+        }}>
+          <h3 style={{ margin: '0 0 15px 0', color: '#2d3436', fontSize: '18px' }}>Job Details</h3>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '15px'
+          }}>
+            <div>
+              <strong style={{ color: '#636e72', fontSize: '13px' }}>Skill Required:</strong>
+              <p style={{ margin: '3px 0 0 0', color: '#2d3436', fontSize: '15px' }}>{selectedJob.skillRequired}</p>
+            </div>
+            <div>
+              <strong style={{ color: '#636e72', fontSize: '13px' }}>Location:</strong>
+              <p style={{ margin: '3px 0 0 0', color: '#2d3436', fontSize: '15px' }}>{selectedJob.location}</p>
+            </div>
+            <div>
+              <strong style={{ color: '#636e72', fontSize: '13px' }}>Time Slot:</strong>
+              <p style={{ margin: '3px 0 0 0', color: '#2d3436', fontSize: '15px' }}>{selectedJob.timeSlot}</p>
+            </div>
+            <div>
+              <strong style={{ color: '#636e72', fontSize: '13px' }}>Daily Wage:</strong>
+              <p style={{ margin: '3px 0 0 0', color: '#00b894', fontSize: '16px', fontWeight: 'bold' }}>₹{selectedJob.dailyWage}/day</p>
+            </div>
+          </div>
+        </div>
+
+        {selectedJob.applicantsList && selectedJob.applicantsList.length > 0 ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '20px'
+          }}>
+            {selectedJob.applicantsList.map((worker) => (
+              <div key={worker.id} style={{
+                background: 'white',
+                borderRadius: '15px',
+                padding: '20px',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                transition: 'transform 0.2s, box-shadow 0.2s'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '15px'
+                }}>
+                  <div>
+                    <h3 style={{ margin: '0 0 5px 0', color: '#2d3436', fontSize: '20px' }}>
+                      {worker.name}
+                    </h3>
+                    <p style={{ margin: 0, color: '#74b9ff', fontWeight: '600', fontSize: '14px' }}>
+                      {worker.skill}
+                    </p>
+                  </div>
+                  <div style={{
+                    background: '#00b894',
+                    color: 'white',
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    ⭐ {worker.rating}
+                  </div>
+                </div>
+
+                <div style={{
+                  background: '#f8f9fa',
+                  borderRadius: '10px',
+                  padding: '12px',
+                  marginBottom: '15px'
+                }}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '12px'
+                  }}>
+                    <div>
+                      <p style={{
+                        margin: 0,
+                        color: '#636e72',
+                        fontSize: '12px',
+                        marginBottom: '4px'
+                      }}>Experience</p>
+                      <p style={{
+                        margin: 0,
+                        color: '#2d3436',
+                        fontSize: '14px',
+                        fontWeight: '600'
+                      }}>{worker.experience}</p>
+                    </div>
+                    <div>
+                      <p style={{
+                        margin: 0,
+                        color: '#636e72',
+                        fontSize: '12px',
+                        marginBottom: '4px'
+                      }}>Completed Jobs</p>
+                      <p style={{
+                        margin: 0,
+                        color: '#2d3436',
+                        fontSize: '14px',
+                        fontWeight: '600'
+                      }}>{worker.completedJobs}</p>
+                    </div>
+                    <div>
+                      <p style={{
+                        margin: 0,
+                        color: '#636e72',
+                        fontSize: '12px',
+                        marginBottom: '4px'
+                      }}>Location</p>
+                      <p style={{
+                        margin: 0,
+                        color: '#2d3436',
+                        fontSize: '14px',
+                        fontWeight: '600'
+                      }}>{worker.location}</p>
+                    </div>
+                    <div>
+                      <p style={{
+                        margin: 0,
+                        color: '#636e72',
+                        fontSize: '12px',
+                        marginBottom: '4px'
+                      }}>Daily Rate</p>
+                      <p style={{
+                        margin: 0,
+                        color: '#00b894',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}>₹{worker.dailyRate}/day</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <p style={{
+                    margin: '0 0 4px 0',
+                    color: '#636e72',
+                    fontSize: '12px'
+                  }}>Preferred Schedule</p>
+                  <p style={{
+                    margin: 0,
+                    color: '#2d3436',
+                    fontSize: '14px'
+                  }}>{worker.preferredSchedule}</p>
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <p style={{
+                    margin: '0 0 4px 0',
+                    color: '#636e72',
+                    fontSize: '12px'
+                  }}>Applied Date</p>
+                  <p style={{
+                    margin: 0,
+                    color: '#2d3436',
+                    fontSize: '14px'
+                  }}>{worker.appliedDate}</p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => handleHireWorker(worker)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#00b894',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = '#019874'}
+                    onMouseOut={(e) => e.target.style.background = '#00b894'}
+                  >
+                    Hire
+                  </button>
+                  <button style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'transparent',
+                    color: '#0984e3',
+                    border: '2px solid #0984e3',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}>
+                    View Profile
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            background: 'white',
+            borderRadius: '15px',
+            padding: '60px 20px',
+            textAlign: 'center',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          }}>
+            <p style={{ color: '#636e72', fontSize: '18px', margin: 0 }}>
+              No applicants yet for this job posting.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (showCreateForm) {
     return (
@@ -278,9 +610,14 @@ const PostJob = ({ userData }) => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '20px'
+        marginBottom: '10px'
       }}>
-        <h2 style={{ margin: 0, color: '#2d3436' }}>My Job Postings</h2>
+        <div>
+          <h2 style={{ margin: '0 0 5px 0', color: '#2d3436' }}>My Job Postings</h2>
+          <p style={{ margin: 0, color: '#636e72', fontSize: '14px' }}>
+            Post jobs visible to all workers. They can view and apply to your listings.
+          </p>
+        </div>
         <button
           onClick={() => setShowCreateForm(true)}
           style={{
@@ -377,15 +714,17 @@ const PostJob = ({ userData }) => {
               </div>
               
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button style={{
-                  padding: '8px 16px',
-                  background: '#74b9ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}>
+                <button 
+                  onClick={() => handleViewApplicants(job)}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#74b9ff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}>
                   View Applicants
                 </button>
                 <button style={{
