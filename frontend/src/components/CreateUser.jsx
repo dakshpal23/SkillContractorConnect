@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 const CreateUser = ({ userData, onNavigateToLogin }) => {
   const [userDetails, setUserDetails] = useState({
-    email: '',
     address: '',
     city: ''
   });
@@ -49,7 +48,6 @@ const CreateUser = ({ userData, onNavigateToLogin }) => {
       
       <form onSubmit={handleSubmit}>
         {[
-          { name: 'email', type: 'email', placeholder: 'Enter email', label: 'Email' },
           { name: 'address', type: 'text', placeholder: 'Enter address', label: 'Address' },
           { name: 'city', type: 'text', placeholder: 'Enter city', label: 'City' }
         ].map((field) => (
@@ -68,13 +66,14 @@ const CreateUser = ({ userData, onNavigateToLogin }) => {
               onChange={handleInputChange}
               placeholder={field.placeholder}
               style={{
-                width: '100%',
+                width:'93%',
                 padding: '15px',
                 border: '2px solid #ddd',
                 borderRadius: '10px',
                 fontSize: '16px',
                 transition: 'border-color 0.3s ease',
-                outline: 'none'
+                outline: 'none',
+                
               }}
               onFocus={(e) => e.target.style.borderColor = '#fd79a8'}
               onBlur={(e) => e.target.style.borderColor = '#ddd'}

@@ -1,8 +1,13 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
 const CreateWorker = ({ userData, onNavigateToLogin }) => {
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
+    libraries: ['marker']
+  });
   const [workerDetails, setWorkerDetails] = useState({
-    email: '',
     skill: '',
     serviceAddress: '',
     serviceRange: '',
@@ -10,7 +15,11 @@ const CreateWorker = ({ userData, onNavigateToLogin }) => {
     otp: '',
     profilePhoto: null
   });
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [showMap, setShowMap] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const videoRef = useRef(null);
@@ -19,6 +28,95 @@ const CreateWorker = ({ userData, onNavigateToLogin }) => {
   const [otpVerified, setOtpVerified] = useState(false);
 
   const skillOptions = ['carpenter', 'welder', 'electrician', 'plumber', 'Construction Worker', 'Farm Worker'];
+
+  // Google Maps configuration
+  const mapContainerStyle = {
+    width: '100%',
+    height: '400px',
+    borderRadius: '10px',
+    marginTop: '10px'
+  };
+
+  const defaultCenter = {
+    lat: 20.5937, // Center of India
+    lng: 78.9629
+  };
+
+  const handleMapClick = (event) => {
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+    setSelectedLocation({ lat, lng });
+    
+    // Reverse geocoding to get address
+    if (isLoaded && window.google && window.google.maps) {
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          setWorkerDetails(prev => ({
+            ...prev,
+            serviceAddress: results[0].formatted_address
+          }));
+        }
+      });
+    }
+  };
+
+  // Update marker when location changes
+  useEffect(() => {
+    if (isLoaded && mapRef.current && selectedLocation && window.google && window.google.maps.marker) {
+      // Remove old marker if exists
+      if (markerRef.current) {
+        markerRef.current.map = null;
+      }
+
+      // Create new AdvancedMarkerElement
+      const { AdvancedMarkerElement } = window.google.maps.marker;
+      markerRef.current = new AdvancedMarkerElement({
+        map: mapRef.current,
+        position: selectedLocation,
+      });
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (markerRef.current) {
+        markerRef.current.map = null;
+      }
+    };
+  }, [selectedLocation, isLoaded]);
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setSelectedLocation({ lat, lng });
+          
+          // Reverse geocoding to get address
+          if (isLoaded && window.google && window.google.maps) {
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+              if (status === 'OK' && results[0]) {
+                setWorkerDetails(prev => ({
+                  ...prev,
+                  serviceAddress: results[0].formatted_address
+                }));
+              }
+            });
+          }
+          setShowMap(true);
+        },
+        (error) => {
+          alert('Unable to get your location. Please click on the map to select your work location.');
+          setShowMap(true);
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by your browser. Please click on the map to select your work location.');
+      setShowMap(true);
+    }
+  };
 
   const handleInputChange = (e) => {
     setWorkerDetails({
@@ -135,35 +233,6 @@ const CreateWorker = ({ userData, onNavigateToLogin }) => {
             color: '#2d3436',
             fontWeight: '600',
             fontSize: '14px'
-          }}>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={workerDetails.email}
-            onChange={handleInputChange}
-            placeholder="Enter email"
-            style={{
-              width: '100%',
-              padding: '15px',
-              border: '2px solid #ddd',
-              borderRadius: '10px',
-              fontSize: '16px',
-              transition: 'border-color 0.3s ease',
-              outline: 'none'
-            }}
-            onFocus={(e) => e.target.style.borderColor = '#00b894'}
-            onBlur={(e) => e.target.style.borderColor = '#ddd'}
-            required
-          />
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '8px',
-            color: '#2d3436',
-            fontWeight: '600',
-            fontSize: '14px'
           }}>Skill:</label>
           <select
             name="skill"
@@ -192,35 +261,161 @@ const CreateWorker = ({ userData, onNavigateToLogin }) => {
 
 
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Service Address:</label>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '8px',
+            color: '#2d3436',
+            fontWeight: '600',
+            fontSize: '14px'
+          }}>Service Address:</label>
+          
+          {!showMap ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowMap(true);
+                getCurrentLocation();
+              }}
+              style={{
+                width: '100%',
+                padding: '15px',
+                background: 'linear-gradient(135deg, #fd79a8, #e84393)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+              onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              📍 Select Work Location on Map
+            </button>
+          ) : (
+            <div>
+              {isLoaded ? (
+                <GoogleMap
+                  mapContainerStyle={mapContainerStyle}
+                  center={selectedLocation || defaultCenter}
+                  zoom={selectedLocation ? 15 : 5}
+                  onClick={handleMapClick}
+                  onLoad={(map) => { mapRef.current = map; }}
+                  mapId="DEMO_MAP_ID"
+                >
+                </GoogleMap>
+              ) : (
+                <div style={{ 
+                  width: '100%', 
+                  height: '400px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  background: '#f5f5f5',
+                  borderRadius: '10px',
+                  marginTop: '10px'
+                }}>
+                  Loading map...
+                </div>
+              )}
+              
+              <button
+                type="button"
+                onClick={getCurrentLocation}
+                style={{
+                  marginTop: '10px',
+                  padding: '10px 15px',
+                  background: '#0984e3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                📍 Use My Current Location
+              </button>
+              
+              <small style={{ 
+                display: 'block', 
+                color: '#666', 
+                marginTop: '10px',
+                fontSize: '13px'
+              }}>
+                Click anywhere on the map to set your work location
+              </small>
+            </div>
+          )}
+          
           <input
             type="text"
             name="serviceAddress"
             value={workerDetails.serviceAddress}
             onChange={handleInputChange}
-            placeholder="Click to select location on map"
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            placeholder="Selected address will appear here"
+            style={{
+              width: '93%',
+              padding: '15px',
+              marginTop: '10px',
+              border: '2px solid #ddd',
+              borderRadius: '10px',
+              fontSize: '16px',
+              transition: 'border-color 0.3s ease',
+              outline: 'none',
+              background: selectedLocation ? '#f0fff4' : 'white'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#00b894'}
+            onBlur={(e) => e.target.style.borderColor = '#ddd'}
             required
+            readOnly={!!selectedLocation}
           />
-          <small style={{ color: '#666' }}>Google Maps integration needed</small>
+          {selectedLocation && (
+            <small style={{ color: 'green', display: 'block', marginTop: '5px', fontWeight: 'bold' }}>
+              ✓ Location selected
+            </small>
+          )}
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Service Range:</label>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '8px',
+            color: '#2d3436',
+            fontWeight: '600',
+            fontSize: '14px'
+          }}>Service Range:</label>
           <input
             type="text"
             name="serviceRange"
             value={workerDetails.serviceRange}
             onChange={handleInputChange}
             placeholder="e.g., 10km radius or specific cities"
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            style={{
+              width: '93%',
+              padding: '15px',
+              border: '2px solid #ddd',
+              borderRadius: '10px',
+              fontSize: '16px',
+              transition: 'border-color 0.3s ease',
+              outline: 'none'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#00b894'}
+            onBlur={(e) => e.target.style.borderColor = '#ddd'}
             required
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Aadhar Number:</label>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '8px',
+            color: '#2d3436',
+            fontWeight: '600',
+            fontSize: '14px'
+          }}>Aadhar Number:</label>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input
               type="text"
@@ -229,7 +424,17 @@ const CreateWorker = ({ userData, onNavigateToLogin }) => {
               onChange={handleInputChange}
               placeholder="12-digit Aadhar number"
               maxLength="12"
-              style={{ flex: 1, padding: '8px' }}
+              style={{
+                flex: 1,
+                padding: '15px',
+                border: '2px solid #ddd',
+                borderRadius: '10px',
+                fontSize: '16px',
+                transition: 'border-color 0.3s ease',
+                outline: 'none'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#00b894'}
+              onBlur={(e) => e.target.style.borderColor = '#ddd'}
               required
             />
             <button
@@ -254,8 +459,14 @@ const CreateWorker = ({ userData, onNavigateToLogin }) => {
         </div>
 
         {otpSent && (
-          <div style={{ marginBottom: '15px' }}>
-            <label>Enter OTP:</label>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: '#2d3436',
+              fontWeight: '600',
+              fontSize: '14px'
+            }}>Enter OTP:</label>
             <div style={{ display: 'flex', gap: '10px' }}>
               <input
                 type="text"
@@ -264,7 +475,17 @@ const CreateWorker = ({ userData, onNavigateToLogin }) => {
                 onChange={handleInputChange}
                 placeholder="Enter 6-digit OTP"
                 maxLength="6"
-                style={{ flex: 1, padding: '8px' }}
+                style={{
+                  flex: 1,
+                  padding: '15px',
+                  border: '2px solid #ddd',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  transition: 'border-color 0.3s ease',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#00b894'}
+                onBlur={(e) => e.target.style.borderColor = '#ddd'}
                 required
               />
               <button

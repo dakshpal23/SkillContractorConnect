@@ -7,7 +7,10 @@ const Home = ({ userData }) => {
     { name: 'Plumber', icon: '🔧', available: 15 },
     { name: 'Welder', icon: '🔥', available: 6 },
     { name: 'Construction', icon: '🏗️', available: 20 },
-    { name: 'Farm Worker', icon: '🌾', available: 10 }
+    { name: 'Farm Worker', icon: '🌾', available: 10 },
+    { name: 'AC Installation', icon: '🛠️', available: 17 },
+    { name: 'Cleaning', icon: '🧹', available: 10 },
+
   ];
 
   return (
