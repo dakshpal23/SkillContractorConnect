@@ -106,14 +106,14 @@ const Home = ({ userData }) => {
           fontWeight: '700',
           letterSpacing: '0.5px'
         }}>
-          Fast, Free way to get experts
+          Fast, Free way to get services
         </h1>
         <p style={{
           fontSize: '24px',
           margin: '0 0 10px 0',
           opacity: 0.95
         }}>
-          Discover Top Experts in <strong>{location || 'Your City'}</strong>
+          Discover Top Workers in <strong>{location || 'Your City'}</strong>
         </p>
         {!isMobile && (
           <p style={{
